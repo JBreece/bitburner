@@ -1,0 +1,22 @@
+# Bitburner Scripts
+
+This repository contains my custom scripts for the game [Bitburner](https://danielyxie.github.io/bitburner/). The scripts are designed to automate server hacking and stock market trading, helping to optimize in-game progression and profits.
+
+## Features
+
+- Automated server hacking: discover, hack, and grow servers efficiently.
+- Stock market trading bots: buy and sell stocks based on market trends.
+- Modular and customizable scripts for various Bitburner tasks.
+
+## Getting Started
+
+1. Clone or download this repository.
+2. Copy the scripts into your Bitburner game environment.
+3. Run the desired scripts from the in-game terminal.
+
+## Disclaimer
+
+These scripts are intended for personal use within the Bitburner game. Use them responsibly and have fun automating!
+
+---
+Happy hacking!
