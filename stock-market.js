@@ -7,7 +7,7 @@ export async function main(ns) {
   const tradableStocks = ns.stock.getSymbols();
   const serverDict = [];
   const visited = new Set();
-  const totalProfits = 0;
+  let totalProfits = 0;
   let playerMoney = ns.getPlayer().money;
   let playerHackingLevel = ns.getHackingLevel();
   function dfs(server, depth = 0) {
