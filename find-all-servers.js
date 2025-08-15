@@ -21,6 +21,8 @@ export async function main(ns) {
       ns.exec("early-hack-template.js", server, 3);
     }
     */
+
+    ns.killall(server);
     
     const neighbors = ns.scan(server);
     for (const neighbor of neighbors) {

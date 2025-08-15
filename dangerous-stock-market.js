@@ -91,7 +91,7 @@ export async function main(ns) {
           if(myForecast > 55){
             let myPurchase = ns.stock.buyStock(buyableStock, myNumSharesToPurchase);
             ns.printf(`Purchased Shares! ${myNumSharesToPurchase} of ${buyableStock} at $${myPurchase}`);
-            ns.tprint(`Purchased Shares! ${myNumSharesToPurchase} of ${buyableStock} at $${myPurchase}`);
+            //ns.tprint(`Purchased Shares! ${myNumSharesToPurchase} of ${buyableStock} at $${myPurchase}`);
           } else{
             /*  re-enable this if need to debug
             ns.printf(`no shares purchased!`);
@@ -120,14 +120,15 @@ export async function main(ns) {
           let myForecast = ns.stock.getForecast(sellableStock) * 100;
           if(potentialProfit > moneyImPaperHandsingFor && myForecast < 48){
             let mySale = ns.stock.sellStock(sellableStock, mySharesOwned);
-            ns.printf(`Purchased Shares! ${mySharesOwned} of ${sellableStock} for $${potentialProfit}!`);
-            ns.tprint(`Purchased Shares! ${mySharesOwned} of ${sellableStock} for $${potentialProfit}!`);
-          } else{
+            ns.printf(`Sold Shares! ${mySharesOwned} of ${sellableStock} for $${potentialProfit}!`);
+            ns.write("profits.txt", potentialProfit + "\n", "a");
+            //ns.tprint(`Purchased Shares! ${mySharesOwned} of ${sellableStock} for $${potentialProfit}!`);
+          } //else{
             /*  re-enable this if need to debug
             ns.printf(`no shares sold!`);
             ns.printf(`possible reasons: profit $${potentialProfit} | forecast ${myForecast}`);
             */
-          }
+          //}
 
         }
       }
