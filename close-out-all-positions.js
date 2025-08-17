@@ -4,7 +4,11 @@ export async function main(ns) {
         let sellableStock = tradableStocks[i];
         let myPosition = ns.stock.getPosition(sellableStock);
         let mySharesOwned = myPosition[0];
+        let myAveragePrice = myPosition[1];
+        let costBasis = mySharesOwned * myAveragePrice;
         if(mySharesOwned > 0){
+            let totalGain = ns.stock.getSaleGain(sellableStock, mySharesOwned, "Long");
+            let potentialProfit = totalGain - costBasis;
             let mySale = ns.stock.sellStock(sellableStock, mySharesOwned);
             ns.printf(`Sold Shares! ${mySharesOwned} of ${sellableStock} for $${potentialProfit}!`);
             ns.write("profits.txt", potentialProfit + "\n", "a");
