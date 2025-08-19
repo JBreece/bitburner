@@ -43,13 +43,18 @@ export async function main(ns) {
         let servNum = parseInt(server.substring(6, 7));
         if(servNum % 2 === 1){
           scriptRam = ns.getScriptRam("grow-stock.js", server);
+          threadCount = Math.floor(serverRam / scriptRam);
           ns.exec("grow-stock.js", server, threadCount);
         }
         else{
+        scriptRam = ns.getScriptRam("early-hack-template.js", server);
+        threadCount = Math.floor(serverRam / scriptRam);
         ns.exec("early-hack-template.js", server, threadCount);
         }
       }
       else{
+        scriptRam = ns.getScriptRam("early-hack-template.js", server);
+        threadCount = Math.floor(serverRam / scriptRam);
         ns.exec("early-hack-template.js", server, threadCount);
       }
     }

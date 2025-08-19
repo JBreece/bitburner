@@ -13,6 +13,7 @@ export async function main(ns) {
         ns.ui.openTail();
         const allEquips = ns.gang.getEquipmentNames();
         while(true){
+            const myMoney = ns.getServerMoneyAvailable("home");
             const members = ns.gang.getMemberNames();
             const duration = await ns.gang.nextUpdate();
             const maxEquipmentCost = 100000000;  // TODO: make this dynamic
@@ -54,39 +55,44 @@ export async function main(ns) {
             }
 
             // Territory clashes
+            const warringEnabled = myGang.territoryWarfareEngaged;
             const myPower = myGang.power;
             let warTime = false;
-            for(const [otherGang, otherInfo] of Object.entries(otherGangs)){
-                if((otherInfo.power * comfortZone) > myPower){
-                    ns.tprint(`${otherGang} is getting too close to us in power.`);
-                    warTime = true;
+            if(warringEnabled == true){
+                for(const [otherGang, otherInfo] of Object.entries(otherGangs)){
+                    if((otherInfo.power * comfortZone) > myPower){
+                        ns.tprint(`${otherGang} is getting too close to us in power.`);
+                        warTime = true;
+                    }
                 }
-            }
-            if(warTime){
-                for(const member of members){
-                    ns.gang.setMemberTask(member, "Territory Warfare");
+                if(warTime){
+                    for(const member of members){
+                        ns.gang.setMemberTask(member, "Territory Warfare");
+                    }
                 }
-            }
-            else{
-                for(const member of members){
-                    if(member.slice(4) % 5 == 0){ns.gang.setMemberTask(member, "Territory Warfare");}
-                    else if(member.slice(4) % 6 == 0){ns.gang.setMemberTask(member, "Vigilante Justice");}
-                    else{ns.gang.setMemberTask(member, "Human Trafficking");}
+                else{
+                    for(const member of members){
+                        if(member.slice(4) % 5 == 0){ns.gang.setMemberTask(member, "Territory Warfare");}
+                        else if(member.slice(4) % 6 == 0){ns.gang.setMemberTask(member, "Vigilante Justice");}
+                        else{ns.gang.setMemberTask(member, "Human Trafficking");}
+                    }
                 }
             }
             
             // Luxury case - buy everything
-            for(const member of members){
-                const memberDetails = ns.gang.getMemberInformation(member);
-                const memberEquips = memberDetails.upgrades;
-                const needToBuy = [];
-                for(const equip of allEquips){
-                    if(!memberEquips.includes(equip) && ns.gang.getEquipmentCost(equip) < maxEquipmentCost){
-                        needToBuy.push(equip);
+            if(myMoney > 1000000000){
+                for(const member of members){
+                    const memberDetails = ns.gang.getMemberInformation(member);
+                    const memberEquips = memberDetails.upgrades;
+                    const needToBuy = [];
+                    for(const equip of allEquips){
+                        if(!memberEquips.includes(equip) && ns.gang.getEquipmentCost(equip) < maxEquipmentCost){
+                            needToBuy.push(equip);
+                        }
                     }
-                }
-                for(const equip of needToBuy){
-                    ns.gang.purchaseEquipment(member, equip);
+                    for(const equip of needToBuy){
+                        ns.gang.purchaseEquipment(member, equip);
+                    }
                 }
             }
         }
