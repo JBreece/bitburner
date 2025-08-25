@@ -3,6 +3,17 @@
     * It will manage gang members, assign tasks, and optimize their performance.
 */
 
+// helper function for moving indices within an array
+function array_move(arr, old_index, new_index) {
+    if (new_index >= arr.length) {
+        var k = new_index - arr.length + 1;
+        while (k--) {
+            arr.push(undefined);
+        }
+    }
+    arr.splice(new_index, 0, arr.splice(old_index, 1)[0]);
+};
+
 export async function main(ns) {
     while(!ns.gang.inGang()){
         ns.printf("Not in a gang yet.\n");
@@ -12,6 +23,19 @@ export async function main(ns) {
     if(ns.gang.inGang()){
         ns.ui.openTail();
         const allEquips = ns.gang.getEquipmentNames();
+        const combatEquips = ns.gang.getEquipmentNames();
+        const combatEquipsSorted = ["Baseball Bat"];
+        for(const equip of allEquips){  // remove non-combat equips from combatEquips
+            if(ns.gang.getEquipmentType(equip) == "Rootkit" || ns.gang.getEquipmentType(equip) == "Vehicle"){
+                combatEquips.splice(combatEquips.indexOf(equip), 1);
+            }
+        }
+        for(const equip of combatEquips){
+            combatEquipsSorted.push(equip);
+            while(ns.gang.getEquipmentCost(combatEquipsSorted.indexOf(equip) - 1) < ns.gang.getEquipmentCost(combatEquipsSorted.indexOf(equip))){
+                array_move(combatEquipsSorted, indexOf(equip), indexOf(equip) - 2);
+            }
+        }
         while(true){
             const myMoney = ns.getServerMoneyAvailable("home");
             const members = ns.gang.getMemberNames();
@@ -80,7 +104,7 @@ export async function main(ns) {
             }
             
             // Luxury case - buy everything
-            if(myMoney > 1000000000){
+            if(myMoney > 10000000000){
                 for(const member of members){
                     const memberDetails = ns.gang.getMemberInformation(member);
                     const memberEquips = memberDetails.upgrades;
@@ -92,6 +116,26 @@ export async function main(ns) {
                     }
                     for(const equip of needToBuy){
                         ns.gang.purchaseEquipment(member, equip);
+                    }
+                }
+            }
+
+            // Purchase equipment
+            if(myMoney > 10000000){
+                for(const equip of combatEquipsSorted){
+                    for(const member of members){
+                        const memberDetails = ns.gang.getMemberInformation(member);
+                        const memberEquips = memberDetails.upgrades;
+                        if(memberEquips.includes(equip)){
+                            ns.printf(`${member} already owns ${equip}`);
+                        }
+                        else if(ns.gang.getEquipmentCost(equip) > maxEquipmentCost){
+                            ns.printf(`${equip} is too expensive!`)
+                        }
+                        else{
+                            ns.gang.purchaseEquipment(member, equip);
+                            ns.printf(`purchased ${equip} for ${member}`);
+                        }
                     }
                 }
             }
