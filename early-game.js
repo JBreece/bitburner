@@ -13,10 +13,13 @@ function getMaxNumOfUpgrades(func, index, level, moneyThreshold){
 }
 
 export async function main(ns) {
+    ns.printf(`Welcome to ${(ns.getPlayer()).bitNodeN}`);
+    ns.tprint(`Welcome to ${(ns.getPlayer()).bitNodeN}`);
     ns.ui.openTail();
     const earlyGameMoneyThreshold = 200000;
 
     // run early game scripts
+    // TODO: refactor this with a function
     let scriptName = "sleeve-management.js";
     let server = "home";
     let threadsNeeded = 1;
@@ -113,7 +116,7 @@ export async function main(ns) {
             ns.singularity.commitCrime("Homicide", true);
         if(ns.singularity.getCrimeChance("Homicide") < 20 && !myFactions.includes("Sector-12") && (ns.singularity.checkFactionInvitations()).includes("Sector-12")){
             ns.singularity.joinFaction("Sector-12");
-            ns.singularity.workForFaction("Sector-12","Field Work",true);
+            ns.singularity.workForFaction("Sector-12","field",true);
         }
         if(ns.singularity.getCrimeChance("Homicide") > 80)
             ns.singularity.commitCrime("Homicide", true);
