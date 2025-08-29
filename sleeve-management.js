@@ -37,6 +37,18 @@ export async function main(ns) {
             ns.printf(`Sleeve ${i} set to ${JSON.stringify(ns.sleeve.getTask(i))}!`);
         }
 
+        if(ns.getRunningScript("late-game.js", "home") != null){
+            while(ns.getRunningScript("late-game.js", "home") != null){
+                for(let i = 0; i < numSleeves; i++){
+                    if((ns.sleeve.getTask(i)).type != "FACTION" && (ns.sleeve.getTask(i)).factionName != "Daedalus"){
+                        ns.sleeve.setToFactionWork(i, "Daedalus", "field");
+                        ns.printf(`Sleeve ${i} set to ${JSON.stringify(ns.sleeve.getTask(i))}!`);
+                    }
+                }
+                await ns.sleep(10000);
+            }
+        }
         await ns.sleep(10000);
     }
+
 }

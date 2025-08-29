@@ -37,7 +37,8 @@ export async function main(ns) {
 
     //ns.tprint(`serverRam ${serverRam} | scriptRam ${scriptRam} | threadCount ${threadCount}`);
     if(serverRam > 0) {
-      ns.killall(server);
+      if(!server.includes("home"))
+        ns.killall(server);
       if(server.includes('pserv-')){
         ns.scp("grow-stock.js", server);
         let servNum = parseInt(server.substring(6, 7));

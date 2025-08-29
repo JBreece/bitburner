@@ -5,6 +5,12 @@ export async function main(ns) {
         return;
     }
     while(true){
-        await ns.grow(target);
+        if(ns.hasRootAccess(target)){
+            await ns.grow(target);
+        }
+        else{
+            ns.printf(`No root access for ${target}`);
+            return;
+        }
     }
 }

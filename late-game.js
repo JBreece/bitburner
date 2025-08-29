@@ -24,40 +24,46 @@ async function waitForFaction(ns, faction, work){
         }
         player = ns.getPlayer();
         myFactions = player.factions;
+        ns.printf(`Not yet in faction! Waiting... ${faction} not in ${myFactions}`);
         await ns.sleep(10000);
     }
     return;
 }
 
 export async function main(ns) {
+    ns.ui.openTail();
     let player = ns.getPlayer();
 
     // purchase TOR router and all programs
-    while(!ns.hasTorRouter()){
-        if(player.money > 200000){
-            ns.printf(`Purchased TOR router: ${ns.singularity.purchaseTor()}`);
-            let darkWebPrograms = ns.singularity.getDarkwebPrograms();
-            for(const program of darkWebPrograms){
-                ns.printf(`Purchased ${program}: ${ns.singularity.purchaseProgram(program)}`);
+    if(!ns.hasTorRouter()){
+        while(!ns.hasTorRouter()){
+            if(player.money > 200000){
+                ns.printf(`Purchased TOR router: ${ns.singularity.purchaseTor()}`);
+                let darkWebPrograms = ns.singularity.getDarkwebPrograms();
+                for(const program of darkWebPrograms){
+                    ns.printf(`Purchased ${program}: ${ns.singularity.purchaseProgram(program)}`);
+                }
             }
+            await ns.sleep(2000);
         }
-        await ns.sleep(2000);
+        runScript(ns, "early-hack-template.js", "home", 1000);
+        await waitForFaction(ns, "Sector-12","field");
+        await ns.sleep(20000);  // wait for some time for hacking level to grow a bit
+        runScript(ns, "auto-install-early-hack-template_v3.js", "home", 1);
     }
 
     // run late game scripts
-    runScript(ns, "auto-install-early-hack-template_v3.js", "home", 1);
-    runScript(ns, "purchase-server-1tb.js", "home", 1);
-    runScript(ns, "early-hack-template.js", "home", 1000);
+    runScript(ns, "purchase-server-max-ram.js", "home", 1);
     runScript(ns, "manager.js", "home", 1);
+    runScript(ns, "sleeve-management.js", "home", 1);
     if(ns.gang.inGang()){runScript(ns, "gang-management.js", "home", 1);}
 
-    await waitForFaction(ns, "Sector-12","field");
     await waitForFaction(ns, "Daedalus","field");
-
+    let currentRep = ns.singularity.getFactionRep("Daedalus");
     let currentFavor = ns.singularity.getFactionFavor("Daedalus");
     if(currentFavor >= ns.getFavorToDonate()){  // exit condition
         const requiredRep = ns.singularity.getAugmentationRepReq("The Red Pill");
-        let currentRep = ns.singularity.getFactionRep("Daedalus");
+        currentRep = ns.singularity.getFactionRep("Daedalus");
         let repNeeded = requiredRep - currentRep;
         let repPerDollar = 0.0001 * (1 + currentFavor / 100);
         let donationNeeded = repNeeded / repPerDollar;
@@ -68,6 +74,7 @@ export async function main(ns) {
             repPerDollar = 0.0001 * (1 + currentFavor / 100);
             donationNeeded = repNeeded / repPerDollar;
             player = ns.getPlayer();
+            ns.printf(`Not enough money yet! ${player.money} < ${donationNeeded}`);
             await ns.sleep(10000);
         }
         ns.singularity.donateToFaction("Daedalus", donationNeeded);
@@ -76,13 +83,22 @@ export async function main(ns) {
         return;
     }
     else{
-        let neurofluxPrice = ns.singularity.getAugmentationPrice("Neuroflux Governor");
+        let neurofluxPrice = ns.singularity.getAugmentationPrice("NeuroFlux Governor");
         while(player.money < (neurofluxPrice * 10)){
             player = ns.getPlayer();
+            neurofluxPrice = ns.singularity.getAugmentationPrice("NeuroFlux Governor");
+            ns.printf(`Not enough money yet! ${player.money} < ${neurofluxPrice * 10}`);
             await ns.sleep(10000);
         }
-        while(ns.singularity.purchaseAugmentation("Daedalus", "Neuroflux Governor")){
-            await ns.sleep(10);
+        let neurofluxRep = ns.singularity.getAugmentationRepReq("NeuroFlux Governor");
+        while(currentRep < (neurofluxRep * 10)){
+            currentRep = ns.singularity.getFactionRep("Daedalus");
+            neurofluxRep = ns.singularity.getAugmentationRepReq("NeuroFlux Governor");
+            ns.printf(`Not enough rep yet! ${currentRep} < ${neurofluxRep * 5}`);
+            await ns.sleep(100);
+        }
+        while(ns.singularity.purchaseAugmentation("Daedalus", "NeuroFlux Governor")){
+            await ns.sleep(100);
         }
         ns.singularity.installAugmentations("late-game.js");  // install & repeat until exit condition
     }
