@@ -2,14 +2,16 @@
     This script is meant for when you're starting a new Bitnode.
 */
 
-function getMaxNumOfUpgrades(func, index, level, moneyThreshold){
-    const cost = func(index, level);
-    if(cost > moneyThreshold){
-        return level - 1;
+function runScript(ns, scriptName, server, threadsNeeded, args){
+    if(args){
+        let execResult = ns.exec(scriptName, server, threadsNeeded, args);
+        ns.print(`Started PID ${execResult} for ${scriptName} using ${threadsNeeded} threads on server ${server} with ${args} args`);
     }
     else{
-        return getMaxNumOfUpgrades(func, index, level + 1, moneyThreshold);
+        let execResult = ns.exec(scriptName, server, threadsNeeded);
+        ns.print(`Started PID ${execResult} for ${scriptName} using ${threadsNeeded} threads on server ${server}`);
     }
+    return;
 }
 
 export async function main(ns) {
@@ -17,98 +19,64 @@ export async function main(ns) {
     ns.tprint(`Welcome to ${ns.getResetInfo().currentNode}`);
     ns.ui.openTail();
     const earlyGameMoneyThreshold = 200000;
+    let player = ns.getPlayer();
+    let myFactions = player.factions;
 
     // run early game scripts
-    // TODO: refactor this with a function
-    let scriptName = "sleeve-management.js";
-    let server = "home";
-    let threadsNeeded = 1;
-    let execResult = ns.exec(scriptName, server, threadsNeeded);
-    ns.print(`Started PID ${execResult} for ${scriptName} using ${threadsNeeded} threads on server ${server}`);
-
-    scriptName = "auto-install-early-hack-template.js";
-    server = "home";
-    threadsNeeded = 1;
-    execResult = ns.exec(scriptName, server, threadsNeeded);
-    ns.print(`Started PID ${execResult} for ${scriptName} using ${threadsNeeded} threads on server ${server}`);
-    
-    scriptName = "early-hack-template.js";
-    server = "home";
-    threadsNeeded = 10;
-    execResult = ns.exec(scriptName, server, threadsNeeded);
-    ns.printf(`Started PID ${execResult} for ${scriptName} using ${threadsNeeded} threads on server ${server}`);
+    runScript(ns, "sleeve-management.js", "home", 1);
+    runScript(ns, "auto-install-early-hack-template.js", "home", 1);
+    runScript(ns, "early-hack-template.js", "home", 8);
 
     // start committing Shoplift
         // optionally, scale this based on % chance of success of future crimes and change crimes as needed
     let crime = "Shoplift";
     ns.singularity.commitCrime(crime, true);
 
-    // run purchase-server-8gb.js  TODO - find a place to put this.
-
     // buy and upgrade hacknet nodes until we can buy TOR router
-    while(ns.getPlayer().money < earlyGameMoneyThreshold){
-        scriptName = "hacknet.js";
-        server = "home";
-        threadsNeeded = 1;
-        if(!ns.isRunning(scriptName, server, earlyGameMoneyThreshold)){
-            execResult = ns.exec(scriptName, server, threadsNeeded, earlyGameMoneyThreshold);
-        }
+    runScript(ns, "hacknet.js", "home", 1, earlyGameMoneyThreshold);
+    while(player.money < earlyGameMoneyThreshold){
+        runScript(ns, "hacknet.js", "home", 1, earlyGameMoneyThreshold);
+        player = ns.getPlayer();
         await ns.sleep(1000);
     }
 
     // buy TOR router and BruteSSH.exe
     ns.printf(`Purchased TOR router: ${ns.singularity.purchaseTor()}`);
-    ns.printf(`Purchased BruteSSH.exe: ${ns.singularity.purchaseProgram("BruteSSH.exe")}`);  // TODO: make this wait for the amount of money needed
-    scriptName = "auto-install-early-hack-template.js";
-    server = "home";
-    threadsNeeded = 1;
-    execResult = ns.exec(scriptName, server, threadsNeeded);
-    ns.printf(`Started PID ${execResult} for ${scriptName} using ${threadsNeeded} threads on server ${server}`);
+    while(!ns.fileExists("FTPCrack.exe")){
+        ns.printf(`Purchased BruteSSH.exe: ${ns.singularity.purchaseProgram("BruteSSH.exe")}`);
+        await ns.sleep(1000);
+    }
+    runScript(ns, "auto-install-early-hack-template.js", "home", 1);
+    runScript(ns, "purchase-server-8gb.js", "home", 1);
 
-    let player = ns.getPlayer();
-    let myFactions = player.factions;
     while(!myFactions.includes("Slum Snakes")){
         //check if each of these is available, and if so, buy them
-        if(!ns.fileExists("FTPCrack.exe")){
+        while(!ns.fileExists("FTPCrack.exe")){
             ns.printf(`Purchased FTPCrack.exe: ${ns.singularity.purchaseProgram("FTPCrack.exe")}`);
-            scriptName = "auto-install-early-hack-template_v3.js";
-            server = "home";
-            threadsNeeded = 1;
-            execResult = ns.exec(scriptName, server, threadsNeeded);
-            ns.printf(`Started PID ${execResult} for ${scriptName} using ${threadsNeeded} threads on server ${server}`);
+            await ns.sleep(10000);
         }
-        if(!ns.fileExists("relaySMTP.exe")){
+        runScript(ns, "auto-install-early-hack-template_v3.js", "home", 1);  // re-run after each darkweb program purchased
+        while(!ns.fileExists("relaySMTP.exe")){
             ns.printf(`Purchased relaySMTP.exe: ${ns.singularity.purchaseProgram("relaySMTP.exe")}`);
-            scriptName = "auto-install-early-hack-template_v3.js";
-            server = "home";
-            threadsNeeded = 1;
-            execResult = ns.exec(scriptName, server, threadsNeeded);
-            ns.printf(`Started PID ${execResult} for ${scriptName} using ${threadsNeeded} threads on server ${server}`);
+            await ns.sleep(10000);
         }
-        if(!ns.fileExists("HTTPWorm.exe")){
+        runScript(ns, "auto-install-early-hack-template_v3.js", "home", 1);
+        while(!ns.fileExists("HTTPWorm.exe")){
             ns.printf(`Purchased HTTPWorm.exe: ${ns.singularity.purchaseProgram("HTTPWorm.exe")}`);
-            scriptName = "auto-install-early-hack-template_v3.js";
-            server = "home";
-            threadsNeeded = 1;
-            execResult = ns.exec(scriptName, server, threadsNeeded);
-            ns.printf(`Started PID ${execResult} for ${scriptName} using ${threadsNeeded} threads on server ${server}`);
+            await ns.sleep(10000);
         }
-        if(!ns.fileExists("SQLInject.exe")){
+        runScript(ns, "auto-install-early-hack-template_v3.js", "home", 1);
+        while(!ns.fileExists("SQLInject.exe")){
             ns.printf(`Purchased SQLInject.exe: ${ns.singularity.purchaseProgram("SQLInject.exe")}`);
-            scriptName = "auto-install-early-hack-template_v3.js";
-            server = "home";
-            threadsNeeded = 1;
-            execResult = ns.exec(scriptName, server, threadsNeeded);
-            ns.printf(`Started PID ${execResult} for ${scriptName} using ${threadsNeeded} threads on server ${server}`);
+            await ns.sleep(10000);
         }
+        runScript(ns, "auto-install-early-hack-template_v3.js", "home", 1);
         
         // buy some 1tb servers
-        if(ns.getPlayer().money > (ns.getPurchasedServerCost(1024) * 5)){
-            scriptName = "purchase-server-1tb.js";
-            server = "home";
-            threadsNeeded = 1;
-            execResult = ns.exec(scriptName, server, threadsNeeded);
-            ns.printf(`Started PID ${execResult} for ${scriptName} using ${threadsNeeded} threads on server ${server}`);
+        while(player.money < (ns.getPurchasedServerCost(1024) * 5)){
+            runScript(ns, "purchase-server-1tb.js", "home", 1);
+            player = ns.getPlayer();
+            await ns.sleep(10000);
         }
         
         // sector-12 field work vs homicide check
