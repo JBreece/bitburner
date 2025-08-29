@@ -65,19 +65,22 @@ export async function main(ns) {
         const requiredRep = ns.singularity.getAugmentationRepReq("The Red Pill");
         currentRep = ns.singularity.getFactionRep("Daedalus");
         let repNeeded = requiredRep - currentRep;
-        let repPerDollar = 0.0001 * (1 + currentFavor / 100);
-        let donationNeeded = repNeeded / repPerDollar;
-        while(player.money < donationNeeded){
+        // const BNmultipliers = ns.getBitNodeMultipliers();  // required as each BN has different donation gains
+        // let repPerDollar = 0.0001 * (1 + currentFavor / 100) * BNmultipliers.FactionWorkRepGain;
+        // let donationNeeded = repNeeded / repPerDollar;
+        let moneyRequired = ns.formulas.reputation.donationForRep(repNeeded, ns.getPlayer());
+        while(player.money < moneyRequired){
             currentRep = ns.singularity.getFactionRep("Daedalus");
             repNeeded = requiredRep - currentRep;
             currentFavor = ns.singularity.getFactionFavor("Daedalus");
-            repPerDollar = 0.0001 * (1 + currentFavor / 100);
-            donationNeeded = repNeeded / repPerDollar;
+            // repPerDollar = 0.0001 * (1 + currentFavor / 100) * BNmultipliers.FactionWorkRepGain;
+            // donationNeeded = repNeeded / repPerDollar;
+            moneyRequired = ns.formulas.reputation.donationForRep(repNeeded, ns.getPlayer());
             player = ns.getPlayer();
-            ns.printf(`Not enough money yet! ${player.money} < ${donationNeeded}`);
+            ns.printf(`Not enough money yet! ${player.money} < ${moneyRequired}`);
             await ns.sleep(10000);
         }
-        ns.singularity.donateToFaction("Daedalus", donationNeeded);
+        ns.singularity.donateToFaction("Daedalus", moneyRequired);
         ns.singularity.purchaseAugmentation("Daedalus", "The Red Pill");
         ns.singularity.installAugmentations("finish-bn.js");  // exit this script, finish the BN
         return;
@@ -91,7 +94,7 @@ export async function main(ns) {
             await ns.sleep(10000);
         }
         let neurofluxRep = ns.singularity.getAugmentationRepReq("NeuroFlux Governor");
-        while(currentRep < (neurofluxRep * 10)){
+        while(currentRep < (neurofluxRep * 5)){
             currentRep = ns.singularity.getFactionRep("Daedalus");
             neurofluxRep = ns.singularity.getAugmentationRepReq("NeuroFlux Governor");
             ns.printf(`Not enough rep yet! ${currentRep} < ${neurofluxRep * 5}`);

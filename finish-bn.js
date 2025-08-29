@@ -50,15 +50,42 @@ export async function main(ns) {
 
         // run end game scripts
         runScript(ns, "auto-install-early-hack-template_v3.js", "home", 1);
-        runScript(ns, "purchase-server-1tb.js", "home", 1);
+        runScript(ns, "purchase-server-max-ram.js", "home", 1);
         runScript(ns, "early-hack-template.js", "home", 1000);
         runScript(ns, "manager.js", "home", 1);
         await waitForFaction(ns, "Sector-12","hacking");
 
-        const requiredHackingLevel = ns.getServerRequiredHackingLevel("W0r1dD43m0n");
+        const server = "w0r1d_d43m0n";
+        const requiredHackingLevel = ns.getServerRequiredHackingLevel(server);
         while(ns.getHackingLevel() < requiredHackingLevel){
             await ns.sleep(10000);
         }
+
+        // need to get root access first
+        if(!ns.hasTorRouter()){
+            while(!ns.hasTorRouter()){
+                if(player.money > 200000){
+                    ns.printf(`Purchased TOR router: ${ns.singularity.purchaseTor()}`);
+                    let darkWebPrograms = ns.singularity.getDarkwebPrograms();
+                    for(const program of darkWebPrograms){
+                        ns.printf(`Purchased ${program}: ${ns.singularity.purchaseProgram(program)}`);
+                    }
+                }
+                await ns.sleep(2000);
+            }
+        }
+        else{
+            let darkWebPrograms = ns.singularity.getDarkwebPrograms();
+            for(const program of darkWebPrograms){
+                ns.printf(`Purchased ${program}: ${ns.singularity.purchaseProgram(program)}`);
+            }
+        }
+        ns.brutessh(server);
+        ns.ftpcrack(server);
+        ns.relaysmtp(server);
+        ns.httpworm(server);
+        ns.sqlinject(server);
+        ns.nuke(server);
 
         // determine next bitnode
         const myPath = [1, 2, 5, 4, 10, 9, 3, 6, 7, 8, 12];  // note, excludes 11, 13, 14 in favor of leveling up the rest.  Do 11, 13, 14 manually.
@@ -69,24 +96,25 @@ export async function main(ns) {
         }
         let nextBN = null;
         for (const bn of myPath) {
-            if(bn == 1 && ownedMap[bn] < 3){  // prioritize SF1.3
+            const level = ownedMap[bn] ?? 0;
+            if(bn === 1 && level < 3){  // prioritize SF1.3
                 nextBN = bn;
                 break;
             }
-            if(bn == 4 && ownedMap[bn] < 3){  // need these singularity functions to be cheaper on RAM
+            if(bn === 4 && level < 3){  // need these singularity functions to be cheaper on RAM
                 nextBN = bn;
                 break;
             }
-            if (!(bn in ownedMap)) {
+            if (level === 0) {
                 nextBN = bn;
                 break;
             } else {
-                if (ownedMap[bn] < 2) {  // upgrade everything else
+                if (level < 2) {  // upgrade everything else
                     nextBN = bn;
                     break;
                 }
             }
-            if(bn == 12){
+            if(bn === 12){
                 nextBN = bn;
                 break;
             }

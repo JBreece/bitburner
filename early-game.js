@@ -13,8 +13,8 @@ function getMaxNumOfUpgrades(func, index, level, moneyThreshold){
 }
 
 export async function main(ns) {
-    ns.printf(`Welcome to ${(ns.getPlayer()).bitNodeN}`);
-    ns.tprint(`Welcome to ${(ns.getPlayer()).bitNodeN}`);
+    ns.printf(`Welcome to ${ns.getResetInfo().currentNode}`);
+    ns.tprint(`Welcome to ${ns.getResetInfo().currentNode}`);
     ns.ui.openTail();
     const earlyGameMoneyThreshold = 200000;
 
@@ -58,7 +58,7 @@ export async function main(ns) {
 
     // buy TOR router and BruteSSH.exe
     ns.printf(`Purchased TOR router: ${ns.singularity.purchaseTor()}`);
-    ns.printf(`Purchased BruteSSH.exe: ${ns.singularity.purchaseProgram("BruteSSH.exe")}`);
+    ns.printf(`Purchased BruteSSH.exe: ${ns.singularity.purchaseProgram("BruteSSH.exe")}`);  // TODO: make this wait for the amount of money needed
     scriptName = "auto-install-early-hack-template.js";
     server = "home";
     threadsNeeded = 1;

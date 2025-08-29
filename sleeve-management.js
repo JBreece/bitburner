@@ -39,9 +39,25 @@ export async function main(ns) {
 
         if(ns.getRunningScript("late-game.js", "home") != null){
             while(ns.getRunningScript("late-game.js", "home") != null){
+                let player = ns.getPlayer();
+                let myFactions = player.factions;
+                const faction = "Daedalus";  // in the case of late game sleeve management, faction is only Daedalus
+                // check to make sure we're actually in Daedalus
+                if(!myFactions.includes(faction)){
+                    while(!myFactions.includes(faction)){
+                        if((ns.singularity.checkFactionInvitations()).includes(faction)){
+                            ns.singularity.joinFaction(faction);
+                        }
+                        player = ns.getPlayer();
+                        myFactions = player.factions;
+                        ns.printf(`Not yet in faction! Waiting... ${faction} not in ${myFactions}`);
+                        await ns.sleep(10000);
+                    }
+                }
+                // assign sleeves to work for Daedalus
                 for(let i = 0; i < numSleeves; i++){
-                    if((ns.sleeve.getTask(i)).type != "FACTION" && (ns.sleeve.getTask(i)).factionName != "Daedalus"){
-                        ns.sleeve.setToFactionWork(i, "Daedalus", "field");
+                    if((ns.sleeve.getTask(i)).type != "FACTION" && (ns.sleeve.getTask(i)).factionName != faction){
+                        ns.sleeve.setToFactionWork(i, faction, "field");
                         ns.printf(`Sleeve ${i} set to ${JSON.stringify(ns.sleeve.getTask(i))}!`);
                     }
                 }
