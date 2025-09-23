@@ -22,7 +22,7 @@ export async function main(ns) {
     }
     */
 
-    ns.killall(server);
+    //ns.killall(server);
     
     const neighbors = ns.scan(server);
     for (const neighbor of neighbors) {

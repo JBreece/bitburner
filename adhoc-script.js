@@ -6,12 +6,14 @@ export async function main(ns) {
   let karma = "";
   let myMultipliers = "";
   let allEquips = [];
+  let corpInfo = "";
   const combatEquips = [];
   moneyAvailable = ns.getServerMoneyAvailable('joesguns');
   minSecLevel = ns.getServerMinSecurityLevel('joesguns');
   secLevel = ns.getServerSecurityLevel('joesguns');
   //let myAdhocRequest = moneyAvailable + ' ' + minSecLevel + ' ' + secLevel;  // change this line
   karma = ns.heart.break().toFixed(2);
+  corpInfo = JSON.stringify(ns.corporation.getMaterial("agri","Chongqing","Plants"));
   let bnMultipliers = JSON.stringify(ns.getBitNodeMultipliers());
   //allEquips = ns.gang.getEquipmentNames();
   //for(const equip of allEquips){
@@ -49,7 +51,8 @@ export async function main(ns) {
     | secLevel = ${secLevel}
     | karma = ${karma}
     | myMultipliers = ${myMultipliers}
-    | combatEquips = ${combatEquips}`;
+    | combatEquips = ${combatEquips}
+    | corpInfo = ${corpInfo};`;
   ns.tprint(myAdhocRequest);
   ns.ui.openTail();
 }

@@ -87,7 +87,7 @@ export async function main(ns) {
         ns.sqlinject(server);
         ns.nuke(server);
 
-        // determine next bitnode
+        // determine next bitnode  // TODO:  fix this.  This is broken.  Sent me to 1 even though I already completed it.
         const myPath = [1, 2, 5, 4, 10, 9, 3, 6, 7, 8, 12];  // note, excludes 11, 13, 14 in favor of leveling up the rest.  Do 11, 13, 14 manually.
         const owned = ns.singularity.getOwnedSourceFiles();
         const ownedMap = {};

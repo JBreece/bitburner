@@ -42,7 +42,7 @@ export async function main(ns) {
 
     // buy TOR router and BruteSSH.exe
     ns.printf(`Purchased TOR router: ${ns.singularity.purchaseTor()}`);
-    while(!ns.fileExists("FTPCrack.exe")){
+    while(!ns.fileExists("BruteSSH.exe")){
         ns.printf(`Purchased BruteSSH.exe: ${ns.singularity.purchaseProgram("BruteSSH.exe")}`);
         await ns.sleep(1000);
     }
