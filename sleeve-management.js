@@ -8,7 +8,7 @@ export async function main(ns) {
     while(true){
         let numSleeves = ns.sleeve.getNumSleeves();
         let mySleeves = [];
-        let myGym = "Powerhouse Gym";  // TODO: make this dynamic
+        let myGym = "Powerhouse Gym";
         for(let i = 0; i < numSleeves; i++){
             mySleeves.push(ns.sleeve.getSleeve(i));
         }

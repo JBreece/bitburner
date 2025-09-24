@@ -15,10 +15,20 @@ function array_move(arr, old_index, new_index) {
 };
 
 export async function main(ns) {
+    // if not in a gang, wait until you are. Commit crime in the meantime.
+    let karma = "";
     while(!ns.gang.inGang()){
         ns.printf("Not in a gang yet.\n");
         await ns.sleep(30000);
-        // TODO: Update this to check if in a desired faction and if karma levels are good, then createGang()
+        karma = ns.heart.break().toFixed(2);
+        if(karma < -54000){
+            while(!ns.singularity.joinFaction("Slum Snakes")){
+                ns.singularity.commitCrime("Homicide");  // only homicide if karma is ready but not in slum snakes for some reason
+                await ns.sleep(30000);
+            }
+            if(ns.gang.createGang()){break;}
+            else{ns.alert("error in gang-management");}
+        }
     }
     if(ns.gang.inGang()){
         ns.ui.openTail();
@@ -26,7 +36,8 @@ export async function main(ns) {
         const combatEquips = ns.gang.getEquipmentNames();
         const combatEquipsSorted = ["Baseball Bat"];
         for(const equip of allEquips){  // remove non-combat equips from combatEquips
-            if(ns.gang.getEquipmentType(equip) == "Rootkit" || ns.gang.getEquipmentType(equip) == "Vehicle"){
+            const type = ns.gang.getEquipmentType(equip);
+            if(type == "Rootkit" || type == "Vehicle" || type == "Augmentation"){
                 combatEquips.splice(combatEquips.indexOf(equip), 1);
             }
         }
@@ -40,7 +51,7 @@ export async function main(ns) {
             const myMoney = ns.getServerMoneyAvailable("home");
             const members = ns.gang.getMemberNames();
             const duration = await ns.gang.nextUpdate();
-            const maxEquipmentCost = 100000000;  // TODO: make this dynamic
+            const maxEquipmentCost = myMoney / 10;
             const myGang = ns.gang.getGangInformation();
             const myGangName = myGang.faction;
             const otherGangs = ns.gang.getOtherGangInformation();
@@ -62,20 +73,23 @@ export async function main(ns) {
                 if(weightedAverage > 1.3){
                         ns.tprint(`Member ${member} has ascended! ${JSON.stringify(ns.gang.ascendMember(member))}`);
                         ns.printf(`Member ${member} has ascended! ${JSON.stringify(ns.gang.ascendMember(member))}`);
-                        ns.gang.purchaseEquipment(member, "Baseball Bat");  // TODO: make this dynamic
+                        ns.gang.purchaseEquipment(member, "Baseball Bat");
+                        ns.gang.setMemberTask(member, "Train Combat");
                     }
             }
 
             // Recruit new members
-            if(ns.gang.getRecruitsAvailable() > 0){  // TODO: make this a while() loop, naming convention is wrong since thugs can die.
-                let numberOfMembers = 0;
-                for(const member of members){
-                    numberOfMembers++;
+            if(ns.gang.getRecruitsAvailable() > 0){
+                let newMemberName = "thug";
+                for(let i = 1; i < (members.length + 2); i++){
+                    newMemberName = "thug" + i;
+                    if(ns.gang.recruitMember(newMemberName)){
+                        ns.tprint(`Recruited ${newMemberName}!`);
+                        ns.gang.purchaseEquipment(newMemberName, "Baseball Bat");
+                        ns.gang.setMemberTask(newMemberName, "Train Combat");
+                        break;
+                    }
                 }
-                const newMemberName = "thug" + (numberOfMembers + 1);
-                ns.tprint(`Recruited ${newMemberName}! ${ns.gang.recruitMember(newMemberName)}`);
-                ns.gang.purchaseEquipment(newMemberName, "Baseball Bat");  // TODO: make this dynamic
-                ns.gang.setMemberTask(newMemberName, "Train Combat");  // TODO: make this dynamic
             }
 
             // Territory clashes
@@ -101,10 +115,27 @@ export async function main(ns) {
                         else{ns.gang.setMemberTask(member, "Human Trafficking");}
                     }
                 }
+
+                // overwrite previous instructions if need to train combat first
+                for(const member of members){
+                    const memberAscension = ns.gang.getAscensionResult(member);
+                    if(!memberAscension){
+                        ns.gang.setMemberTask(member, "Train Combat");
+                        continue;
+                    }
+                    const weightedAverage = (memberAscension.agi * 1  // change multiplier here if needed
+                        + memberAscension.def * 1
+                        + memberAscension.dex * 1
+                        + memberAscension.str * 1) / 4;  // divide by number of ascension factors
+                    if(weightedAverage < 1.05){
+                        ns.gang.setMemberTask(member, "Train Combat");
+                    }
+                }
             }
             
+            /*  commenting this out for now - I'm rethinking this strategy.  Might revisit.
             // Luxury case - buy everything
-            if(myMoney > 10000000000){
+            if(myMoney > 1000000000){
                 for(const member of members){
                     const memberDetails = ns.gang.getMemberInformation(member);
                     const memberEquips = memberDetails.upgrades;
@@ -119,9 +150,10 @@ export async function main(ns) {
                     }
                 }
             }
+            */
 
             // Purchase equipment
-            if(myMoney > 10000000){
+            if(myMoney > 1000000){
                 for(const equip of combatEquipsSorted){
                     for(const member of members){
                         const memberDetails = ns.gang.getMemberInformation(member);
