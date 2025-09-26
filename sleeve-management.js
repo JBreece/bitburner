@@ -13,12 +13,25 @@ export async function main(ns) {
             mySleeves.push(ns.sleeve.getSleeve(i));
         }
 
+        // purchase any affordable augmentations for each sleeve
+        const myMoney = ns.getServerMoneyAvailable("home");
+        const maxEquipmentCost = myMoney / 10;
+        for (let i = 0; i < numSleeves; i++) {
+            // Get all available augmentations for this sleeve
+            const availableAugs = ns.sleeve.getSleevePurchasableAugs(i);
+            for (const aug of availableAugs) {
+                if (aug.cost <= maxEquipmentCost) {
+                    ns.sleeve.purchaseSleeveAug(i, aug.name);
+                }
+            }
+        }
+
         // while shock is greater than 20, reduce shock
         for(let i = 0; i < numSleeves; i++){
-            if(mySleeves[i].shock > 20){ns.sleeve.setToShockRecovery(i);}
+            if(mySleeves[i].shock > 75){ns.sleeve.setToShockRecovery(i);}
         
         // while any of the 4 combat stats are less than 70, train stats
-            if(mySleeves[i].shock <= 20){
+            if(mySleeves[i].shock <= 75){
                 if(mySleeves[i].skills.strength < 70){ns.sleeve.setToGymWorkout(i, myGym, "strength");}
                 if(mySleeves[i].skills.defense < 70){ns.sleeve.setToGymWorkout(i, myGym, "defense");}
                 if(mySleeves[i].skills.dexterity < 70){ns.sleeve.setToGymWorkout(i, myGym, "dexterity");}
@@ -64,6 +77,7 @@ export async function main(ns) {
                 await ns.sleep(10000);
             }
         }
+
         await ns.sleep(10000);
     }
 

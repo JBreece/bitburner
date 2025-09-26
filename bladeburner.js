@@ -68,6 +68,7 @@ export async function main(ns) {
         } else {
             ns.printf(`Stamina too low! ${stamina} ${ns.bladeburner.startAction("General", "Hyperbolic Regeneration Chamber")}`);
             while(stamina < lowStamina){
+                stamina = getStaminaPercentage(ns);
                 await ns.bladeburner.nextUpdate();
             }
             while(stamina < highStamina){
@@ -76,8 +77,9 @@ export async function main(ns) {
                 } else if(ns.bladeburner.getCityChaos(ns.bladeburner.getCity()) > chaosThreshold){
                     ns.printf(`Stamina still too low! ${stamina} ${ns.bladeburner.startAction("General", "Diplomacy")}`);
                 } else{
-                    ns.printf(`Stamina still too low! ${stamina} ${ns.bladeburner.startAction("General", "Training")}`);
+                    ns.printf(`Stamina still too low! ${stamina} ${ns.bladeburner.startAction("General", "Training")}`);  // TODO!! - error here somewhere.  Getting stuck here
                 }
+                stamina = getStaminaPercentage(ns);
                 await ns.bladeburner.nextUpdate();
             }
         }

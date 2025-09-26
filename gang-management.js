@@ -171,6 +171,16 @@ export async function main(ns) {
                     }
                 }
             }
+
+            // If money is above 1 billion, add all Augmentation equips to combatEquipsSorted
+            if(myMoney > 1000000000){
+                for(const equip of allEquips){
+                    if(ns.gang.getEquipmentType(equip) === "Augmentation" && !combatEquipsSorted.includes(equip)){
+                        combatEquipsSorted.push(equip);
+                        ns.printf(`Added augmentation equip ${equip} to combatEquipsSorted`);
+                    }
+                }
+            }
         }
     }
 }
