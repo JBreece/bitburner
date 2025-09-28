@@ -13,7 +13,7 @@ export async function main(ns) {
   secLevel = ns.getServerSecurityLevel('joesguns');
   //let myAdhocRequest = moneyAvailable + ' ' + minSecLevel + ' ' + secLevel;  // change this line
   karma = ns.heart.break().toFixed(2);
-  corpInfo = JSON.stringify(ns.corporation.getMaterial("agri","Chongqing","Plants"));
+  //corpInfo = JSON.stringify(ns.corporation.getMaterial("agri","Chongqing","Plants"));
   let bnMultipliers = JSON.stringify(ns.getBitNodeMultipliers());
   //allEquips = ns.gang.getEquipmentNames();
   //for(const equip of allEquips){

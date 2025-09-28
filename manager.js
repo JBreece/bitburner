@@ -59,8 +59,8 @@ export async function main(ns) {
                     findServers(neighbor, depth + 1);
                     if(ns.getServerMaxRam(neighbor) >= 8 // at least 8GB RAM
                     && ns.hasRootAccess(neighbor) // we have root access
-                    && !availableServers.includes(neighbor) // not already in the list
-                    && !neighbor.includes("pserv-")){ // not a purchased server
+                    && !availableServers.includes(neighbor)){ // not already in the list
+                    //&& !neighbor.includes("pserv-")){ // not a purchased server
                         ns.scp("weaken.js", neighbor);
                         ns.scp("grow.js", neighbor);
                         ns.scp("hack.js", neighbor);
@@ -184,7 +184,8 @@ export async function main(ns) {
                     //ns.tprint(`exec = ${execResult} script ${scriptName} server ${server} threadsNeeded ${threadsNeeded} target ${target}`);
                     ns.print(`Started ${task} on ${target} using ${threadsNeeded} threads on server ${server}`);
                     if(execResult != 0)
-                      break; // Move to the next target after scheduling
+                      continue; // Move to the next target after scheduling
+                    // note, this was 'break' before - was that wrong?
                 }
                 //else
                   //ns.print(`server ${server} threadsNeeded = ${threadsNeeded} threadSize = ${threadSize} freeRam = ${freeRam}`);
