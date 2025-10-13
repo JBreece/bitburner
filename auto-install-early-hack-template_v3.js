@@ -36,7 +36,8 @@ export async function main(ns) {
     }
 
     //ns.tprint(`serverRam ${serverRam} | scriptRam ${scriptRam} | threadCount ${threadCount}`);
-    if(serverRam > 0) {
+    // if(serverRam > 0 &&!server.includes("hacknet")) {  // exception for hacknet, don't include.
+    if(serverRam > 0) {  // INCLUDE hacknet (un-comment this line and comment the above)
       if(!server.includes("home"))
         ns.killall(server);
       if(server.includes('pserv-')){
