@@ -17,6 +17,11 @@ export async function main(ns) {
     while(true){
         for(let x = 0; x < width; x++){
             for(let y = 0; y < height; y++){
+                //     if(ns.stanek.getFragment(x,y) && ns.stanek.getFragment(x,y).effect && !(ns.stanek.getFragment(x,y).effect).includes("adjacent fragment power")){
+                //         await ns.stanek.chargeFragment(x,y);
+                //         // ns.printf(`Charged fragment at ${x},${y}`);
+                //     }
+                // }
                 const frag = ns.stanek.getFragment(x, y);
                 if (!frag) continue; // no fragment
                 if (frag.effect?.includes("adjacent fragment power")) continue; // booster fragment

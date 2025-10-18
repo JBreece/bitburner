@@ -14,13 +14,11 @@ export async function main(ns) {
     // see below for added stuff to run the 'hack' script
 
     // this clears all my purchased servers and re-runs the code.  Should be unnecessary now but can re-enable if required.
-    /*
-    if(server.includes('pserv-')){
-      ns.scp("early-hack-template.js", server);
-      ns.killall(server);
-      ns.exec("early-hack-template.js", server, 3);
-    }
-    */
+    // if(server.includes('pserv-')){
+    //   ns.scp("stanek.js", server);
+    //   ns.killall(server);
+    //   ns.exec("stanek.js", server, 150);
+    // }
 
     //ns.killall(server);
     
