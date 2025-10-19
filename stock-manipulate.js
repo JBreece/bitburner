@@ -21,10 +21,11 @@ export async function main(ns) {
 
   const execHosts = [];
   for (const h of visited) {
+    if (h === "home") continue; // don't touch the home machine
     ns.printf(`Checking host: ${h}`);
     try {
-        ns.scp(WORKER, h);
-        ns.killall(h);
+      ns.scp(WORKER, h);
+      ns.killall(h);
       if (ns.hasRootAccess(h) && ns.getServerMaxRam(h) >= minRamNeeded) execHosts.push(h);
     } catch (e) {}
   }

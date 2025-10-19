@@ -12,6 +12,6 @@ export async function main(ns) {
 
     // Infinite loop that continously grows the target server
     while(true) {
-      await ns.grow(target)
+      await ns.grow(target, { stock: true});
     }
 }
