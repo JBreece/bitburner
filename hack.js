@@ -6,7 +6,7 @@ export async function main(ns) {
     }
     while(true){
         if(ns.hasRootAccess(target)){
-            await ns.hack(target, { stock: true});
+            await ns.hack(target, { stock: false});
         }
         else{
             ns.printf(`No root access for ${target}`);

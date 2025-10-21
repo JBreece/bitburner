@@ -11,7 +11,10 @@ export async function main(ns) {
 
     const minProfitAbsolute = 5e5; // $500k profit before selling
     const minProfitPercent = 0.02; // 2% gain before selling
+    const maxPercentOfPortfolio = 0.05;       // 05% of portfolio invested value
     const dipPercent = 0.05;       // wait until price dips 5% below avg before buying
+
+    let lastBuyTick = {};
 
     const symbols = ns.stock.getSymbols();
 
@@ -112,15 +115,15 @@ export async function main(ns) {
 
         const cash = ns.getServerMoneyAvailable("home");
         if (cash <= reserve) {
-            ns.print(`Low cash (${ns.nFormat(cash, "$0.00a")}), waiting...`);
+            ns.print(`Low cash (${cash}), waiting...`);
             await ns.stock.nextUpdate();
             continue;
         }
 
         // === BUY LOGIC ===
-        for (const org of Object.keys(orgToHostname)) {
-            const host = orgToHostname[org];
-            if (!host) continue;
+        for (const org of Object.keys(orgToSymbol)) {  // NOTE:  If you need this to be hackable servers only, change "orgToSymbol" to "orgToHostname"
+            // const host = orgToHostname[org];
+            // if (!host) continue;
 
             // // Skip servers with no money
             // const maxMoney = ns.getServerMaxMoney(host);
@@ -144,7 +147,10 @@ export async function main(ns) {
 
             // Cash available to spend this tick
             const availableToSpend = Math.max(0, cash - reserve);
-            if (availableToSpend <= 0) continue;
+            if (availableToSpend <= 0) {
+                ns.print(`No available cash to spend after reserve (${reserve})`);
+                continue;
+            }
 
             // Compute portfolio invested total (sum of avgPrice * shares across all symbols)
             const portfolioInvested = symbols.reduce((acc, s) => {
@@ -153,35 +159,51 @@ export async function main(ns) {
             }, 0);
 
             // Configure per-symbol maximum total investment:
-            // - at minimum allow perStockBudget
-            // - at maximum allow perStockBudget * 10
-            // - otherwise use a percentage of current portfolio (here 50%)
-            const capPercent = 0.50; // 50% of portfolio invested value
-            const maxPerSymbolByPercent = portfolioInvested * capPercent;
-            const maxPerSymbol = Math.max(perStockBudget, Math.min(perStockBudget * 10, maxPerSymbolByPercent || perStockBudget));
+            let maxPerSymbol = portfolioInvested * maxPercentOfPortfolio;
+            // If we currently own nothing, allow one initial buy up to $10M
+            if (ownedShares === 0) {
+                maxPerSymbol = Math.max(perStockBudget, maxPerSymbol);
+            }
+            // Never allow more than 15% of portfolio, period
+            maxPerSymbol = Math.min(maxPerSymbol, portfolioInvested * maxPercentOfPortfolio);
 
             // Don't exceed the per-symbol total cap (but allow multiple buys across ticks until that cap)
             const currentlyInvested = ownedShares * avgPrice;
             const remainingAllowed = Math.max(0, maxPerSymbol - currentlyInvested);
-            if (remainingAllowed <= 0) continue;
+            if (remainingAllowed <= 0) {
+                ns.print(`Skipping buy for ${sym} — reached max invested $${maxPerSymbol} (currently $${currentlyInvested})`);
+                continue;
+            }
 
             // Each single buy is still limited to perStockBudget (so you won't spend > perStockBudget in one buy)
             const budget = Math.min(perStockBudget, availableToSpend, remainingAllowed);
-            if (budget <= 0 || budget < perStockBudget) continue;
+            if (budget <= 0 || budget < perStockBudget){
+                ns.print(`Skipping buy for ${sym} — budget $${budget} too low`);
+                continue;
+            }
 
             const price = ns.stock.getPrice(sym);
-            if (!price || price <= 0) continue;
+            if (!price || price <= 0){
+                ns.print(`Skipping buy for ${sym} — invalid price ${price}`);
+                continue;
+            }
+
+            // Prevent rapid re-buys within 30 seconds
+            if (lastBuyTick[sym] && Date.now() - lastBuyTick[sym] < 5 * 60 * 1000) { // 30 seconds 
+                ns.print(`Skipping buy for ${sym} — bought too recently`);
+                continue;
+            }
 
             // If this symbol is on hold due to a recent sell, skip buying until it dips far enough
             if (holds[sym] !== undefined) {
                 const holdUntil = holds[sym];
                 if (price > holdUntil) {
-                    ns.print(`Skipping buy for ${sym} — on hold until price <= ${ns.nFormat(holdUntil, "0.00a")} (current ${ns.nFormat(price, "0.00a")})`);
+                    ns.print(`Skipping buy for ${sym} — on hold until price <= ${holdUntil} (current ${price})`);
                     continue;
                 } else {
                     // price dipped to or below threshold: clear hold and allow buys again
                     delete holds[sym];
-                    ns.print(`Hold cleared for ${sym} — price dipped to ${ns.nFormat(price, "0.00a")}`);
+                    ns.print(`Hold cleared for ${sym} — price dipped to ${price}`);
                 }
             }
 
@@ -190,7 +212,8 @@ export async function main(ns) {
 
             const actuallyBought = ns.stock.buyStock(sym, sharesToBuy);
             if (actuallyBought > 0) {
-                ns.print(`Bought ${actuallyBought} shares of ${sym} (${org}) at $${ns.nFormat(price, "0.00a")}, spending $${ns.nFormat(actuallyBought * price, "0.00a")}`);
+                ns.print(`Bought ${actuallyBought} shares of ${sym} (${org}) at $${price}, spending $${actuallyBought * price}`);
+                lastBuyTick[sym] = Date.now();
             }
         }
 
